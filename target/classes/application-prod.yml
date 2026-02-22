@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:redshift://your-cluster.region.redshift.amazonaws.com:5439/your_db}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.amazon.redshift.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+
+  batch:
+    jdbc:
+      initialize-schema: never
+
+app:
+  s3:
+    bucket: ${S3_BUCKET:}
+    key: ${S3_KEY:}
+    region: ${AWS_REGION:us-east-1}
+    use-local-file: false
+  batch:
+    chunk-size: 500
+
+logging:
+  level:
+    com.example.springbatchdemo: INFO
+    org.springframework.batch: WARN

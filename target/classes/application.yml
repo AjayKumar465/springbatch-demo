@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: springbatch-demo
+
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: always
+
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+app:
+  batch:
+    chunk-size: 100
+    skip-limit: 10
+  s3:
+    bucket: ${S3_BUCKET:my-etl-bucket}
+    key: ${S3_KEY:data/orders.csv}
+    region: ${AWS_REGION:us-east-1}
+    use-local-file: false
+    local-file-path: sample-data/orders_sample.csv
+
+logging:
+  level:
+    root: INFO
+    com.example.springbatchdemo: INFO
+    org.springframework.batch: INFO
