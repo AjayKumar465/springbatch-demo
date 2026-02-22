@@ -18,7 +18,7 @@ Production-ready Spring Batch 5 application that reads denormalized order data f
 
 ```
 src/main/java/com/example/springbatchdemo/
-├── config/        # BatchConfig, S3Config, property classes
+├── config/        # BatchConfig, S3Properties, BatchProperties
 ├── domain/        # RawOrderRecord, Customer, Order, OrderTransaction, OrderDataComposite
 ├── job/           # Job/step config, reader factory, processor, composite writer
 └── listener/      # Job execution listener
@@ -71,6 +71,7 @@ All settings are externalised and can be overridden via environment variables.
 | `app.s3.prefix`              | `S3_PREFIX`                | `data/orders/` – S3 prefix (folder) when use-folder is true |
 | `app.batch.chunk-size`       | –                          | `100`                      |
 | `app.batch.skip-limit`       | –                          | `10`                       |
+| `app.batch.retry-limit`      | –                          | `3`                        |
 
 ## Build
 
@@ -146,14 +147,14 @@ A sample file is provided at `sample-data/orders_sample.csv`.
 |---------------|------------------------------------------------------------------------|
 | Reader        | Single stream from S3 / local file                                     |
 | Processor     | Pure in-memory transformation                                          |
-| Writer        | Batch INSERT via `NamedParameterJdbcTemplate.batchUpdate`              |
+| Writer        | JPA batch upserts via `saveAll()` with bulk `findByExternalIdIn`       |
 | ID resolution | One bulk `SELECT ... WHERE external_id IN (...)` per entity per chunk  |
 
 ## Pipeline Flow
 
 1. `FlatFileItemReader` streams the CSV row-by-row.
 2. `OrderDataItemProcessor` maps each row into a `Customer` + `Order` + `OrderTransaction` composite, filtering invalid rows.
-3. `OrderDataCompositeItemWriter` (per chunk):
+3. `OrderDataCompositeJpaItemWriter` (per chunk):
    - Batch upserts customers (ON CONFLICT).
    - Bulk-resolves customer DB IDs in one query.
    - Batch upserts orders with resolved `customer_id`.

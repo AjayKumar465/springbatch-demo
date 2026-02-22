@@ -30,12 +30,12 @@ public class OrderItemReaderFactory {
     };
 
     private final S3Properties s3Properties;
+    private final S3Service s3Service;
 
-    @Autowired
-    private S3Service s3Service;
-
-    public OrderItemReaderFactory(S3Properties s3Properties) {
+    public OrderItemReaderFactory(S3Properties s3Properties,
+                                  @Autowired(required = false) S3Service s3Service) {
         this.s3Properties = s3Properties;
+        this.s3Service = s3Service;
     }
 
     public ItemReader<RawOrderRecord> create() {
@@ -101,6 +101,9 @@ public class OrderItemReaderFactory {
 
     private Resource resolveLocalResource() {
         String path = s3Properties.getKey();
+        if (path == null || path.isBlank()) {
+            throw new IllegalStateException("app.s3.key is required when app.s3.use-local-file is true.");
+        }
         log.info("Using local file: {}", path);
         return new FileSystemResource(path);
     }
@@ -110,6 +113,9 @@ public class OrderItemReaderFactory {
             throw new IllegalStateException("S3 single-file mode requires S3Service; ensure S3 auto-configuration is enabled.");
         }
         String key = s3Properties.getKey();
+        if (key == null || key.isBlank()) {
+            throw new IllegalStateException("app.s3.key is required for S3 single-file mode.");
+        }
         log.info("Using S3 resource: s3://{}/{}", s3Service.getBucketName(), key);
         return s3Service.getResource(key);
     }

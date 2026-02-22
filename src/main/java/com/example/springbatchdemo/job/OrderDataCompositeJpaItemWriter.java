@@ -67,7 +67,7 @@ public class OrderDataCompositeJpaItemWriter implements ItemWriter<OrderDataComp
         Set<String> externalIds = uniqueByExternalId.keySet();
         List<Customer> existing = customerRepository.findByExternalIdIn(externalIds);
         Map<String, Customer> existingByExternalId = existing.stream()
-                .collect(Collectors.toMap(Customer::getExternalId, c -> c));
+                .collect(Collectors.toMap(Customer::getExternalId, c -> c, (a, b) -> a));
 
         LocalDateTime now = LocalDateTime.now();
         List<Customer> toSave = new ArrayList<>();
@@ -121,7 +121,7 @@ public class OrderDataCompositeJpaItemWriter implements ItemWriter<OrderDataComp
         Set<String> externalOrderIds = uniqueByExternalOrderId.keySet();
         List<Order> existing = orderRepository.findByExternalOrderIdIn(externalOrderIds);
         Map<String, Order> existingByExternalOrderId = existing.stream()
-                .collect(Collectors.toMap(Order::getExternalOrderId, o -> o));
+                .collect(Collectors.toMap(Order::getExternalOrderId, o -> o, (a, b) -> a));
 
         LocalDateTime now = LocalDateTime.now();
         List<Order> toSave = new ArrayList<>();
@@ -177,7 +177,7 @@ public class OrderDataCompositeJpaItemWriter implements ItemWriter<OrderDataComp
                 .collect(Collectors.toSet());
         List<OrderTransaction> existing = orderTransactionRepository.findByExternalTransactionIdIn(externalTxnIds);
         Map<String, OrderTransaction> existingByExternalId = existing.stream()
-                .collect(Collectors.toMap(OrderTransaction::getExternalTransactionId, t -> t));
+                .collect(Collectors.toMap(OrderTransaction::getExternalTransactionId, t -> t, (a, b) -> a));
 
         LocalDateTime now = LocalDateTime.now();
         List<OrderTransaction> merged = new ArrayList<>();

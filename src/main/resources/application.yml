@@ -37,10 +37,17 @@ app:
   batch:
     chunk-size: 100
     skip-limit: 10
+    retry-limit: 3
   s3:
     key: 
     use-folder: true
     prefix: ${S3_PREFIX:data}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 logging:
   level:

@@ -7,6 +7,7 @@ public class BatchProperties {
 
     private int chunkSize = 100;
     private int skipLimit = 10;
+    private int retryLimit = 3;
 
     public int getChunkSize() {
         return chunkSize;
@@ -22,5 +23,13 @@ public class BatchProperties {
 
     public void setSkipLimit(int skipLimit) {
         this.skipLimit = skipLimit;
+    }
+
+    public int getRetryLimit() {
+        return retryLimit;
+    }
+
+    public void setRetryLimit(int retryLimit) {
+        this.retryLimit = retryLimit;
     }
 }

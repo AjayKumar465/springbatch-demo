@@ -13,6 +13,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -56,6 +57,8 @@ public class OrderETLJobConfig {
                 .processor(processor)
                 .writer(writer)
                 .faultTolerant()
+                .retry(TransientDataAccessException.class)
+                .retryLimit(batchProperties.getRetryLimit())
                 .skip(FlatFileParseException.class)
                 .skipLimit(batchProperties.getSkipLimit())
                 .build();

@@ -1,6 +1,0 @@
-customer_id,customer_name,customer_email,order_id,order_date,order_amount,order_status,transaction_id,transaction_type,transaction_amount,transaction_status
-CUST001,John Doe,john.doe@example.com,ORD001,2025-01-15,250.00,COMPLETED,TXN001,PAYMENT,250.00,SUCCESS
-CUST002,Jane Smith,jane.smith@example.com,ORD002,2025-01-16,89.99,COMPLETED,TXN002,PAYMENT,89.99,SUCCESS
-CUST001,John Doe,john.doe@example.com,ORD003,2025-01-17,125.75,COMPLETED,TXN003,PAYMENT,125.75,SUCCESS
-CUST003,Robert Brown,robert.brown@example.com,ORD004,2025-01-18,340.50,PENDING,TXN004,PAYMENT,340.50,PENDING
-CUST001,John Doe,john.doe@example.com,ORD001,2025-01-15,250.00,COMPLETED,TXN005,REFUND,50.00,SUCCESS

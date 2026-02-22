@@ -1,6 +1,8 @@
 -- ============================================================
 -- Amazon Redshift schema for Order ETL pipeline
 -- Run via SQL Workbench or psql against Redshift cluster
+-- Note: Redshift does not enforce UNIQUE/FK; uniqueness is
+-- enforced at application level (JPA upsert by external_id).
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS customer (

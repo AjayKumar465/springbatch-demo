@@ -1,7 +1,6 @@
 package com.example.springbatchdemo.service;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -38,13 +37,21 @@ public class S3Service {
     }
 
     public String getBucketName() {
+        validateBucket();
         return bucketName;
+    }
+
+    private void validateBucket() {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalStateException("S3 bucket name is required. Set spring.cloud.aws.s3.bucket-name or S3_BUCKET.");
+        }
     }
 
     /**
      * Upload a file to S3.
      */
     public void uploadFile(String key, File file) {
+        validateBucket();
         s3Client.putObject(
                 PutObjectRequest.builder()
                         .bucket(bucketName)
@@ -57,6 +64,7 @@ public class S3Service {
      * Download a file from S3 as byte array.
      */
     public byte[] downloadFile(String key) {
+        validateBucket();
         ResponseBytes<GetObjectResponse> object = s3Client.getObjectAsBytes(
                 GetObjectRequest.builder()
                         .bucket(bucketName)
@@ -69,6 +77,7 @@ public class S3Service {
      * Get a streaming Resource for reading an S3 object.
      */
     public Resource getResource(String key) {
+        validateBucket();
         return new S3ObjectResource(bucketName, key, s3Client);
     }
 
@@ -76,6 +85,7 @@ public class S3Service {
      * List object keys under a prefix (folder).
      */
     public List<String> listObjectKeys(String prefix) {
+        validateBucket();
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .prefix(prefix)
