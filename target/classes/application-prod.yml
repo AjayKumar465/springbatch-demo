@@ -1,4 +1,16 @@
 spring:
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      region:
+        static: ${AWS_REGION:us-east-1}
+      s3:
+        bucket-name: ${S3_BUCKET:}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:redshift://your-cluster.region.redshift.amazonaws.com:5439/your_db}
     username: ${SPRING_DATASOURCE_USERNAME:}
@@ -13,9 +25,7 @@ spring:
 
 app:
   s3:
-    bucket: ${S3_BUCKET:}
     key: ${S3_KEY:}
-    region: ${AWS_REGION:us-east-1}
     use-local-file: false
   batch:
     chunk-size: 500

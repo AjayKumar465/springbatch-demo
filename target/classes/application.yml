@@ -1,6 +1,23 @@
 spring:
   application:
     name: springbatch-demo
+  profiles:
+    active: local
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      region:
+        static: ${AWS_REGION:us-east-1}
+      s3:
+        bucket-name: ${S3_BUCKET:springbatch-demo}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: false
 
   batch:
     job:
@@ -21,11 +38,9 @@ app:
     chunk-size: 100
     skip-limit: 10
   s3:
-    bucket: ${S3_BUCKET:my-etl-bucket}
-    key: ${S3_KEY:data/orders.csv}
-    region: ${AWS_REGION:us-east-1}
-    use-local-file: false
-    local-file-path: sample-data/orders_sample.csv
+    key: 
+    use-folder: true
+    prefix: ${S3_PREFIX:data}
 
 logging:
   level:

@@ -2,15 +2,21 @@ package com.example.springbatchdemo.job;
 
 import com.example.springbatchdemo.config.S3Properties;
 import com.example.springbatchdemo.domain.RawOrderRecord;
+import com.example.springbatchdemo.service.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class OrderItemReaderFactory {
@@ -24,15 +30,27 @@ public class OrderItemReaderFactory {
     };
 
     private final S3Properties s3Properties;
-    private final ResourceLoader resourceLoader;
 
-    public OrderItemReaderFactory(S3Properties s3Properties, ResourceLoader resourceLoader) {
+    @Autowired
+    private S3Service s3Service;
+
+    public OrderItemReaderFactory(S3Properties s3Properties) {
         this.s3Properties = s3Properties;
-        this.resourceLoader = resourceLoader;
     }
 
-    public FlatFileItemReader<RawOrderRecord> create() {
-        Resource resource = resolveResource();
+    public ItemReader<RawOrderRecord> create() {
+        if (s3Properties.isUseLocalFile()) {
+            Resource resource = resolveLocalResource();
+            return buildFlatFileReader(resource);
+        }
+        if (s3Properties.isUseFolder()) {
+            return buildMultiResourceReader();
+        }
+        Resource resource = resolveS3SingleResource();
+        return buildFlatFileReader(resource);
+    }
+
+    private FlatFileItemReader<RawOrderRecord> buildFlatFileReader(Resource resource) {
         log.info("Reading order data from: {}", resource.getDescription());
 
         BeanWrapperFieldSetMapper<RawOrderRecord> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
@@ -49,13 +67,50 @@ public class OrderItemReaderFactory {
                 .build();
     }
 
-    private Resource resolveResource() {
-        if (s3Properties.isUseLocalFile()) {
-            log.info("Using local file: {}", s3Properties.getLocalFilePath());
-            return new FileSystemResource(s3Properties.getLocalFilePath());
+    private MultiResourceItemReader<RawOrderRecord> buildMultiResourceReader() {
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 folder mode requires S3Service; ensure S3 auto-configuration is enabled.");
         }
-        String s3Uri = String.format("s3://%s/%s", s3Properties.getBucket(), s3Properties.getKey());
-        log.info("Using S3 resource: {}", s3Uri);
-        return resourceLoader.getResource(s3Uri);
+        String prefix = s3Properties.getPrefix();
+        if (prefix == null || prefix.isBlank()) {
+            throw new IllegalStateException("app.s3.prefix is required when app.s3.use-folder is true.");
+        }
+
+        List<String> keys = s3Service.listObjectKeys(prefix);
+        Resource[] resources = keys.stream()
+                .map(s3Service::getResource)
+                .toArray(Resource[]::new);
+
+        if (resources.length == 0) {
+            log.warn("No CSV files found under s3://{}/{}", s3Service.getBucketName(), prefix);
+        }
+
+        log.info("Reading order data from {} files under s3://{}/{}", resources.length,
+                s3Service.getBucketName(), prefix);
+
+        Resource placeholder = resources.length > 0 ? resources[0] : new ByteArrayResource(new byte[0]);
+        FlatFileItemReader<RawOrderRecord> delegate = buildFlatFileReader(placeholder);
+
+        MultiResourceItemReader<RawOrderRecord> multiReader = new MultiResourceItemReader<>();
+        multiReader.setName("orderItemReader");
+        multiReader.setResources(resources);
+        multiReader.setDelegate(delegate);
+
+        return multiReader;
+    }
+
+    private Resource resolveLocalResource() {
+        String path = s3Properties.getKey();
+        log.info("Using local file: {}", path);
+        return new FileSystemResource(path);
+    }
+
+    private Resource resolveS3SingleResource() {
+        if (s3Service == null) {
+            throw new IllegalStateException("S3 single-file mode requires S3Service; ensure S3 auto-configuration is enabled.");
+        }
+        String key = s3Properties.getKey();
+        log.info("Using S3 resource: s3://{}/{}", s3Service.getBucketName(), key);
+        return s3Service.getResource(key);
     }
 }

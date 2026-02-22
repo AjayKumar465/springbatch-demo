@@ -1,19 +1,49 @@
 package com.example.springbatchdemo.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "customer_order", uniqueConstraints = @UniqueConstraint(columnNames = "external_order_id"))
 public class Order {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "customer_id", nullable = false)
     private Long customerId;
+
+    @Column(name = "external_order_id", nullable = false)
     private String externalOrderId;
+
+    /** Used by ETL batch for lookups; not persisted. */
+    @Transient
     private String customerExternalId;
+
+    @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
+
+    @Column(name = "total_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
+
+    @Column(nullable = false)
     private String status;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     public Order() {

@@ -5,19 +5,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.s3")
 public class S3Properties {
 
-    private String bucket;
     private String key;
-    private String region;
     private boolean useLocalFile;
-    private String localFilePath;
-
-    public String getBucket() {
-        return bucket;
-    }
-
-    public void setBucket(String bucket) {
-        this.bucket = bucket;
-    }
+    /** When true (S3 only), list objects by prefix and read all matching files. */
+    private boolean useFolder;
+    /** S3 prefix (folder path) for useFolder mode, e.g. "data/orders/". */
+    private String prefix;
 
     public String getKey() {
         return key;
@@ -25,14 +18,6 @@ public class S3Properties {
 
     public void setKey(String key) {
         this.key = key;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
     }
 
     public boolean isUseLocalFile() {
@@ -43,11 +28,19 @@ public class S3Properties {
         this.useLocalFile = useLocalFile;
     }
 
-    public String getLocalFilePath() {
-        return localFilePath;
+    public boolean isUseFolder() {
+        return useFolder;
     }
 
-    public void setLocalFilePath(String localFilePath) {
-        this.localFilePath = localFilePath;
+    public void setUseFolder(boolean useFolder) {
+        this.useFolder = useFolder;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 }

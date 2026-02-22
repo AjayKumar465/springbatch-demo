@@ -1,4 +1,7 @@
 spring:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
   autoconfigure:
     exclude:
       - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
@@ -31,7 +34,7 @@ app:
     key: test/orders.csv
     region: us-east-1
     use-local-file: true
-    local-file-path: src/test/resources/test_orders.csv
+    key: src/test/resources/test_orders.csv
 
 logging:
   level:

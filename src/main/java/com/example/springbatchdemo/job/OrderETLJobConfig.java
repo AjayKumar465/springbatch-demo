@@ -10,7 +10,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +24,7 @@ public class OrderETLJobConfig {
     private final BatchProperties batchProperties;
     private final OrderItemReaderFactory readerFactory;
     private final OrderDataItemProcessor processor;
-    private final OrderDataCompositeItemWriter writer;
+    private final OrderDataCompositeJpaItemWriter writer;
     private final ETLJobExecutionListener jobListener;
 
     public OrderETLJobConfig(JobRepository jobRepository,
@@ -32,7 +32,7 @@ public class OrderETLJobConfig {
                              BatchProperties batchProperties,
                              OrderItemReaderFactory readerFactory,
                              OrderDataItemProcessor processor,
-                             OrderDataCompositeItemWriter writer,
+                             OrderDataCompositeJpaItemWriter writer,
                              ETLJobExecutionListener jobListener) {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
@@ -44,12 +44,12 @@ public class OrderETLJobConfig {
     }
 
     @Bean
-    public FlatFileItemReader<RawOrderRecord> orderItemReader() {
+    public ItemReader<RawOrderRecord> orderItemReader() {
         return readerFactory.create();
     }
 
     @Bean
-    public Step orderETLStep(FlatFileItemReader<RawOrderRecord> orderItemReader) {
+    public Step orderETLStep(ItemReader<RawOrderRecord> orderItemReader) {
         return new StepBuilder("orderETLStep", jobRepository)
                 .<RawOrderRecord, OrderDataComposite>chunk(batchProperties.getChunkSize(), transactionManager)
                 .reader(orderItemReader)
